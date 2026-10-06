@@ -70,7 +70,7 @@ try {
         scripts.push(`    sound ${sound}\n    {\n        category = ApocalipseMusic,\n        master = Music,\n        is3D = false,\n        loop = false,\n        clip\n        {\n            file = media/sound/ApocalipseMusic/${id}/${filename},\n            volume = 1.0,\n        }\n    }`);
     }
     const lines = lyrics.map(line => `        { at = ${line.at}, ${line.untilTime !== undefined ? `untilTime = ${line.untilTime}, ` : ''}text = ${textLua(line.text)} },`);
-    const registration = `require "ApocalipseMusic/AMPStation"\n\nApocalipseMusic.registerSong({\n    id = ${quote(id)}, station = ${quote(station)},\n    title = ${quote(title)}, artist = ${quote(artist)},\n    duration = ${duration},\n    chunks = {\n${chunks.map(chunk => `        { at = ${chunk.at}, sound = ${quote(chunk.sound)} },`).join('\n')}\n    },\n    lyrics = {\n${lines.join('\n')}\n    },\n})\n`;
+    const registration = `require "ApocalipseMusic/AMPStation"\n\nABRRadio.registerSong({\n    id = ${quote(id)}, station = ${quote(station)},\n    title = ${quote(title)}, artist = ${quote(artist)},\n    duration = ${duration},\n    chunks = {\n${chunks.map(chunk => `        { at = ${chunk.at}, sound = ${quote(chunk.sound)} },`).join('\n')}\n    },\n    lyrics = {\n${lines.join('\n')}\n    },\n})\n`;
     mkdirSync(dirname(luaFile), { recursive: true });
     mkdirSync(dirname(scriptFile), { recursive: true });
     mkdirSync(soundFolder, { recursive: true });

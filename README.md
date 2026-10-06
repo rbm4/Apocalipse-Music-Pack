@@ -1,8 +1,9 @@
 # Apocalipse Music Pack (Build 42)
 
-This is a music-radio foundation, with a station registration, independent song
-modules, timed local lyrics, and generic between-song radio talk. It depends on
-`apocalipsebrradio` (ApocalipseBRRadio). No music files are included yet; the
+This is a content pack: station registration, independent song modules, audio
+assets, timed lyrics, and generic between-song radio talk. Playback, synchronization,
+and channel scheduling belong to ApocalipseBRRadio v2.1.0 or newer. This pack
+depends on `apocalipsebrradio`. No music files are included yet; the
 station stays silent until you register at least one song.
 
 ## Files
@@ -10,18 +11,25 @@ station stays silent until you register at least one song.
 - `Apocalipse-Music-Pack/42/mod.info`: B42 metadata and radio dependency.
 - `Apocalipse-Music-Pack/common/media/lua/shared/ApocalipseMusic/AMPStation.lua`:
   station name/frequency (94.2 FM), color, talk probability, and talk variants.
-- `.../AMPRegistry.lua`: shared catalog, validation, and compact protocol.
+- `.../AMPRegistry.lua`: compatibility require for older catalog modules.
 - `.../Songs/<song-id>.lua`: one registration module per imported song, including
   title, artist, real duration, audio chunks, and timestamped lyrics.
-- `common/media/lua/server/ApocalipseMusic/AMPServer.lua`: server/SP authority.
-- `common/media/lua/client/ApocalipseMusic/AMPClient.lua`: listener audio/captions.
 - `common/media/scripts/AMP_<song-id>.txt` and
   `common/media/sound/ApocalipseMusic/<song-id>/`: generated audio definitions/assets.
 
-The radio framework itself is not modified. This station has no ABR scheduled
-transmissions: its separate scheduler uses real seconds rather than game minutes.
-Do not add `ABRRadio.triggerImmediate` or regular ABR transmissions to this station;
-those would compete with the music scheduler.
+The radio framework owns `ABRRadioMusic.lua` (catalog/protocol),
+`ABRRadioMusicServer.lua` (real-time authority), and `ABRRadioMusicClient.lua`
+(listener playback/captions), under its own `common/media/lua` folders.
+The music pack contains no playback controller.
+
+Use `ABRRadio.registerMusicStation`, `ABRRadio.registerSong`, and
+`ABRRadio.registerMusicTalk` to supply content. Framework transmissions may share
+this channel: `ABRRadio.triggerImmediate` waits until music/timed talk ends, then
+deferred messages drain in order. Ordinary scheduled text also waits for the
+segment to finish. Music waits for an active text transmission, queued messages,
+and due eligible scheduled text before acquiring the channel again. Other
+frequencies continue independently. Arbitration covers framework APIs; native
+radio scripts or third-party calls directly to `SendTransmission` bypass it.
 
 ## Import a song
 
@@ -72,7 +80,7 @@ The authority picks a weighted song, avoids consecutive repeats when possible,
 and waits its entire declared real duration before choosing the next segment.
 It may choose one weighted talk variant between songs (35% by default), then
 returns to music. Talk consists of locally resolved timed text. You can add
-variants with `ApocalipseMusic.registerTalk` in separate shared files.
+variants with `ABRRadio.registerMusicTalk` in separate shared files.
 
 Only radios receiving this frequency start listener playback. Inventory radios
 must be equipped; world/vehicle radios must be within local listening range.
@@ -122,10 +130,11 @@ sound scripts, and assets in their own B42 `common/media` folders. Require
 `--mod <extra-mod-root>` to generate files in that pack, then supply its own
 `42/mod.info` with `require=Apocalipse-Music-Pack`.
 
-For a separate station, require `ApocalipseMusic/AMPRegistry` in a uniquely named
-shared registration file and call `registerStation` with a new ID and unused
+For a separate station, depend directly on `apocalipsebrradio`, require
+`ApocalipseBRRadio/ABRRadioMusic` in a uniquely named shared registration file,
+and call `ABRRadio.registerMusicStation` with a new ID and unused
 frequency. Require that registration file explicitly from its song modules
-before calling `registerSong`. The importer accepts `--station <id>`; adjust
+before calling `ABRRadio.registerSong`. The importer accepts `--station <id>`; adjust
 the generated module's require for that custom station. The generic server and
 client controllers support all stations in the registry.
 
@@ -141,12 +150,18 @@ into your B42 mods directory alongside ApocalipseBRRadio, enable both, and tune
 an equipped/world/vehicle radio to 94.2 FM. The build script preserves the B42
 layout instead of using the template's former B41 PZ Studio packager.
 
-The Lua tests run through Fengari and simulate registry/protocol behavior,
+The Lua tests load the actual ApocalipseBRRadio source through Fengari and
+simulate registry/protocol behavior, channel ownership, deferred message order,
+scheduled transmission fairness, independent frequencies,
 lyrics and gaps, duplicate/stale packets, late joining, retuning, muting, range,
 deafness, lost signal, and song/talk scheduling. They do not exercise Kahlua,
 Java interop, FMOD playback, split-screen audio isolation, or multiplayer latency.
 Before publishing, verify those in-game, including a second client tuning in
 mid-song, battery/power loss, moving away from a world radio, and song transitions.
+They locate the framework at the Workshop path used for this development;
+set `ABR_RADIO_MOD` to a different framework mod root when needed. Install the
+updated framework together with the rebuilt music pack; an older framework does
+not provide the new registration/playback contract.
 
 ## Engine evidence and limits
 

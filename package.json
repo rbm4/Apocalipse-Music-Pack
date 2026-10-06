@@ -4,6 +4,6 @@
     "build": "node tools/build.mjs",
     "update": "pzstudio update",
     "import:music": "node tools/import-song.mjs",
-    "test": "npm exec --yes --package=fengari-node-cli -- fengari tests/music_spec.lua"
+    "test": "npm exec --yes --package=fengari-node-cli -- fengari tests/run.lua"
   }
 }

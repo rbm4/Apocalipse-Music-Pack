@@ -2,7 +2,7 @@ require "ApocalipseMusic/AMPStation"
 
 -- Copy to common/media/lua/shared/ApocalipseMusic/Songs/<id>.lua AFTER
 -- supplying matching sound scripts/assets. This example is not auto-loaded.
-ApocalipseMusic.registerSong({
+ABRRadio.registerSong({
     id = "pack_song01", station = "amp_music",
     title = "Song title", artist = "Artist", duration = 180,
     weight = 10,

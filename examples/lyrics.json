@@ -1,0 +1,4 @@
+[
+    { "at": 12.5, "untilTime": 17.0, "text": { "EN": "First lyric line", "PTBR": "Primeira linha da letra" } },
+    { "at": 18.0, "untilTime": 22.5, "text": "Second lyric line" }
+]

@@ -1,8 +1,9 @@
 {
   "scripts": {
-    "clean": "pzstudio clean",
-    "build": "pzstudio clean && pzstudio build",
-    "watch": "pzstudio clean && pzstudio build && pzstudio watch",
-    "update": "pzstudio update"
+    "clean": "node tools/build.mjs --clean",
+    "build": "node tools/build.mjs",
+    "update": "pzstudio update",
+    "import:music": "node tools/import-song.mjs",
+    "test": "npm exec --yes --package=fengari-node-cli -- fengari tests/music_spec.lua"
   }
 }

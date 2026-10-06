@@ -7,6 +7,7 @@ local M = ApocalipseMusic
 M.PREFIX = "AMP1|"
 M.HEARTBEAT = 2
 M.TIMEOUT = 8
+M.DEFAULT_LYRIC_DURATION = 4
 
 local function validId(id)
     return type(id) == "string" and #id > 0 and #id <= 24
@@ -16,7 +17,14 @@ end
 function M.registerStation(config)
     assert(validId(config.id), "Invalid music station ID")
     assert(not M.stations[config.id], "Duplicate music station ID")
+    assert(type(config.frequency) == "number" and config.frequency > 0
+        and config.frequency == math.floor(config.frequency), "Station needs an integer frequency")
+    assert(config.isTV ~= true, "Music stations must be radio channels")
     assert(not ABRRadio.getChannelIdByFrequency(config.frequency), "Radio frequency already registered")
+    config.color = config.color or { r = 0.8, g = 0.65, b = 0.25 }
+    config.signalStrength = config.signalStrength or -1
+    config.talkChance = config.talkChance or 35
+    assert(config.talkChance >= 0 and config.talkChance <= 100, "Talk probability must be 0-100")
     assert(ABRRadio.registerChannel(config), "Radio registration failed")
     config.songs, config.talks = {}, {}
     M.stations[config.id] = config
@@ -40,6 +48,10 @@ local function register(config, kind)
         previous = line.at
     end
     if kind == "song" then
+        config.lyricDuration = config.lyricDuration or M.DEFAULT_LYRIC_DURATION
+        assert(type(config.lyricDuration) == "number" and config.lyricDuration > 0,
+            "Default lyric display duration must be positive seconds")
+        if config.chunks and #config.chunks == 0 then config.chunks = nil end
         assert(type(config.sound) == "string" or #(config.chunks or {}) > 0, "Song needs sound or chunks")
         previous = -1
         for i, chunk in ipairs(config.chunks or {}) do
@@ -89,7 +101,13 @@ function M.textIndex(entry, elapsed)
     for i = #lines, 1, -1 do
         local line = lines[i]
         if elapsed >= line.at then
-            local ending = line.untilTime or (lines[i + 1] and lines[i + 1].at) or entry.duration
+            -- Sparse song cues expire even without an explicit end. Talk lines
+            -- retain their separate until-next-line behavior. No blank cues are
+            -- needed to keep playback commands flowing through instrumental gaps.
+            local nextAt = (lines[i + 1] and lines[i + 1].at) or entry.duration
+            local ending = line.untilTime or (entry.kind == "song"
+                and (line.at + (entry.lyricDuration or M.DEFAULT_LYRIC_DURATION))) or nextAt
+            ending = math.min(ending, nextAt, entry.duration)
             if elapsed < ending then return i end
             return 0
         end

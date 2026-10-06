@@ -5,14 +5,14 @@
     "workshop": {
         "visibility": "public",
         "tags": [
-            "Build 41"
+            "Build 42"
         ],
         "excludes": []
     },
     "mods": {
         "Apocalipse-Music-Pack": {
             "name": "Apocalipse-Music-Pack",
-            "description": ""
+            "description": "Music radio catalog with compact playback commands, timed local lyrics, and mid-song joining through audio chunks. Requires apocalipsebrradio."
         }
     }
 }

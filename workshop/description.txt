@@ -1,3 +1,5 @@
-[h1]project-name[/h1]
+[h1]Apocalipse Music Pack - Build 42[/h1]
 
-Mod under development...
+Music-radio foundation for ApocalipseBRRadio. Adds a station at 94.2 FM, separate song registrations, compact radio commands, timed local lyrics, and between-song radio talk.
+
+Requires apocalipsebrradio. This template contains no music files; add songs using tools/import-song.mjs before distributing a music catalog.

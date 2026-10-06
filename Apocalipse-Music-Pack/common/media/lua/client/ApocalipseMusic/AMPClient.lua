@@ -65,6 +65,14 @@ local function onDeviceText(guid, codes, x, y, z, text, device)
 end
 
 local function display(device, state, elapsed)
+    if state.entry.kind == "song" and not state.captionShown then
+        state.captionShown = true
+        local title = ABRRadio.resolveText(state.entry.title)
+        local artist = ABRRadio.resolveText(state.entry.artist)
+        local caption = title .. (artist ~= "" and (" - " .. artist) or "")
+        local color = M.stations[state.entry.station].color
+        if caption ~= "" then device:AddDeviceText(caption, color.r, color.g, color.b, "", nil, -1) end
+    end
     local index = M.textIndex(state.entry, elapsed)
     if index == 0 or index <= state.textIndex then return end
     state.textIndex = index

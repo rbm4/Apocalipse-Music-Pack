@@ -39,7 +39,7 @@ function run(command, args) {
 }
 const duration = Number(run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', resolve(input)]).trim());
 if (!Number.isFinite(duration) || duration <= 0) throw new Error('Unable to read audio duration');
-const lyrics = options.lyrics ? JSON.parse(readFileSync(resolve(options.lyrics), 'utf8')) : [];
+const lyrics = options.lyrics ? JSON.parse(readFileSync(resolve(options.lyrics), 'utf8').replace(/^\uFEFF/, '')) : [];
 if (!Array.isArray(lyrics)) throw new Error('Lyrics JSON must be an array');
 let previous = -1;
 for (const line of lyrics) {
